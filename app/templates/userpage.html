@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>xStream | CS411</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js" integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/acdf71f1df.js" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css')
+        }}">
+        <script src="{{ url_for('static', filename='scripts/login.js')}}" type="text/javascript"></script>
+    </head>
+
+    <body>
+        <header>
+            <div class="container">
+                <div class="row py-4 justify-content-between">
+                    <div class="col-9">
+                        <p class="app-name"><a href="{{ url_for('index')}}">xStream</a></p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        {% if auth == True %}
+        <div class="modal fade" id="edit-watchlist-modal" tabindex="-1" aria-labelledby="editListLabel" aria-hidden="true">
+           <div class="modal-dialog modal-lg">
+             <div class="modal-content">
+               <div class="modal-header">
+                 <h2 class="modal-title" id="editListLabel">Edit Watchlist Name</h2>
+                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               </div>
+               <div class="modal-body">
+                   <div class="mb-3">
+                       <label for="editListName" class="form-label" id="edit-show-form-display">Watchlist Name</label>
+                       <input type="text" class="form-control" id="editListName" placeholder="Watchlist Name">
+                   </div>
+                   <input type="hidden" id="editListId">
+              </div>
+               <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                 <button id="edit-watchlist-bt" type="button" class="btn btn-primary">Save Changes</button>
+               </div>
+             </div>
+           </div>
+         </div>
+
+        <div class="modal fade" id="edit-wt-show-modal" tabindex="-1" aria-labelledby="editListLabel" aria-hidden="true">
+           <div class="modal-dialog modal-lg">
+             <div class="modal-content">
+               <div class="modal-header">
+                 <h2 class="modal-title" id="editListLabel">Edit WatchType</h2>
+                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               </div>
+               <div class="modal-body">
+                   <div class="mb-3">
+                       <label for="editWatchtype" class="form-label" id="edit-show-form-display">WatchType</label>
+                       <select id="editWatchtype" name="Watchtype">
+                         <option value=0>Plan to Watch</option>
+                         <option value=1>Watching</option>
+                         <option value=2>Paused</option>
+                         <option value=3>Completed</option>
+                       </select>
+                   </div>
+                   <div class="mb-3">
+                       <label for="entryList" class="form-label" id="edit-entryList-form-display">Watchlist</label>
+                       <select id="entryList" name="Watchlist">
+                         {% for listname, shows in watchlists.items() %}
+                         <option value={{shows[0]}}>{{listname}}</option>
+                         {% endfor %}
+                       </select>
+                   </div>
+
+                   <input type="hidden" id="editListIdWt">
+                   <input type="hidden" id="editShowIdWt">
+              </div>
+               <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                 <button id="edit-wt-show-bt" type="button" class="btn btn-primary">Save Changes</button>
+               </div>
+             </div>
+           </div>
+         </div>
+
+
+        <div class="modal fade" id="add-watchlist-modal" tabindex="-1" aria-labelledby="addListLabel" aria-hidden="true">
+           <div class="modal-dialog modal-lg">
+             <div class="modal-content">
+               <div class="modal-header">
+                 <h2 class="modal-title" id="addListLabel">Add Watchlist</h2>
+                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               </div>
+               <div class="modal-body">
+                   <div class="mb-3">
+                       <label for="addListName" class="form-label" id="add-show-form-display">Watchlist Name</label>
+                       <input type="text" class="form-control" id="addListName" placeholder="Watchlist Name">
+                   </div>
+                   <input type="hidden" id="addListId">
+              </div>
+               <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                 <button id="add-watchlist-bt" type="button" class="btn btn-primary">Add Watchlist</button>
+               </div>
+             </div>
+           </div>
+         </div>
+
+
+
+        <main role="main" class="container">
+           <div class="modal-content">
+             <div class="modal-header">
+               <h2 class="modal-title">Edit</h2>
+             </div>
+             <div class="modal-body">
+                 <div class="mb-3">
+                     <input type="hidden" value="{{ userinfo.Username }}" maxlength=32 class="form-control" id="uname" placeholder="e.g. deepanv2">
+                 </div>
+                 <div class="mb-3">
+                     <label for="pass" class="form-label">Password</label>
+                     <input type="password" value="{{ userinfo.Password }}" maxlength=32 class="form-control" id="pass" placeholder="e.g., password123">
+                 </div>
+                 <div class="mb-3">
+                     <label for="pass" class="form-label"><strong>Email</strong></label>
+                     <input type="text" value="{{ userinfo.Email }}" maxlength=64 class="form-control" id="email" placeholder="e.g., deepanv2@illinois.edu">
+                 </div>
+                 <div class="mb-3">
+                     <label for="pass" class="form-label"><strong>Age</strong></label>
+                     <input type="number"value="{{ userinfo.Age }}" class="form-control" id="age" placeholder="e.g., 21">
+                 </div>
+                 <div class="mb-3">
+                     <label for="pass" class="form-label"><strong>Name</strong></label>
+                     <input type="text" value="{{ userinfo.Name }}" maxlength=128 class="form-control" id="name" placeholder="e.g., Deepan Venkatesh">
+                 </div>
+                 <label for="selection" class="form-label"><strong>Services:</strong></label>
+                 <div class="selection">
+                    <label for="1">
+                        <input type="checkbox" id="1"{% if 1 in services %} checked {% endif %}>
+                        <div class="service cb-netflix">Netflix</div>
+                    </label>
+                    <label for="2">
+                        <input type="checkbox" id="2"{% if 2 in services %} checked {% endif %}>
+                        <div class="service cb-prime">Prime Video</div>
+                    </label>
+                    <label for="3">
+                        <input type="checkbox" id="3"{% if 3 in services %} checked {% endif %}>
+                        <div class="service cb-hulu">Hulu</div>
+                    </label>
+                    <label for="4">
+                        <input type="checkbox" id="4"{% if 4 in services %} checked {% endif %}>
+                        <div class="service cb-disney">Disney+</div>
+                    </label>
+                </div>
+             </div>
+             <div class="modal-footer">
+               <button id="save-bt" type="button" class="btn btn-primary">Save</button>
+             </div>
+           </div>
+           <div class="modal-content">
+             <div class="modal-header">
+               <h1 class="modal-title">Watchlists</h1>
+               <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#add-watchlist-modal"><i class="fa fa-plus fa-1" aria-hidden="true"></i></button>
+             </div>
+             {% for listname, shows in watchlists.items() %}
+             <div class="modal-body">
+               <h2 class="modal-title">{{ listname }}</h2>
+               <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#edit-watchlist-modal" data-source="{{shows[0]}}" data-content="{{listname}}"><i class="fa fa-pen fa-1" aria-hidden="true"></i></button>
+               <button class="btn btn-outline-secondary btn-sm remove" data-source="{{shows[0]}}"type="button"><i class="fa fa-trash fa-1" aria-hidden="true"></i></button>
+
+             </div>
+             {% if shows is not none %}
+             {% if shows[1][0]|length > 0 %}
+             <div class="modal-body">
+                <h3 class="modal-title">Plan to Watch</h3>
+             </div>
+             <table class="table table-responsive">
+                <thead>
+                  <tr>
+                    <th scope="col">ShowName</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for show in shows[1][0] %}
+                    <tr>
+                        <td class="name">{{show[1]}}</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#edit-wt-show-modal" data-watchtype=0 data-source="{{shows[0]}}" data-content="{{show[0]}}"><i class="fa fa-pen fa-1" aria-hidden="true"></i></button>
+                            <button class="btn btn-outline-secondary btn-sm remove-show" data-content="{{show[0]}}" data-source="{{shows[0]}}" type="button"><i class="fa fa-trash fa-1" aria-hidden="true"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+              {% endif %}
+
+             {% if shows[1][1]|length > 0 %}
+             <div class="modal-body">
+                <h3 class="modal-title">Watching</h3>
+             </div>
+             <table class="table table-responsive">
+                <thead>
+                  <tr>
+                    <th scope="col">ShowName</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for show in shows[1][1] %}
+                    <tr>
+                        <td class="name">{{show[1]}}</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#edit-wt-show-modal" data-watchtype=1 data-source="{{shows[0]}}" data-content="{{show[0]}}"><i class="fa fa-pen fa-1" aria-hidden="true"></i></button>
+                            <button class="btn btn-outline-secondary btn-sm remove-show" data-content="{{show[0]}}" data-source="{{shows[0]}}" type="button"><i class="fa fa-trash fa-1" aria-hidden="true"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+             {% endif %}
+ 
+             {% if shows[1][2]|length > 0 %}
+             <div class="modal-body">
+                <h3 class="modal-title">Paused</h3>
+             </div>
+             <table class="table table-responsive">
+                <thead>
+                  <tr>
+                    <th scope="col">ShowName</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for show in shows[1][2] %}
+                    <tr>
+                        <td class="name">{{show[1]}}</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#edit-wt-show-modal" data-watchtype=2 data-source="{{shows[0]}}" data-content="{{show[0]}}"><i class="fa fa-pen fa-1" aria-hidden="true"></i></button>
+                            <button class="btn btn-outline-secondary btn-sm remove-show" data-content="{{show[0]}}" data-source="{{shows[0]}}" type="button"><i class="fa fa-trash fa-1" aria-hidden="true"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+              {% endif %}
+ 
+             {% if shows[1][3]|length > 0 %}
+             <div class="modal-body">
+                <h3 class="modal-title">Completed</h3>
+             </div>
+             <table class="table table-responsive">
+                <thead>
+                  <tr>
+                    <th scope="col">ShowName</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for show in shows[1][3] %}
+                    <tr>
+                        <td class="name">{{show[1]}}</td>
+                        <td>
+                            <button type="button" class="btn btn-outline-info btn-sm" data-bs-toggle="modal" data-bs-target="#edit-wt-show-modal" data-watchtype=3 data-source="{{shows[0]}}" data-content="{{show[0]}}"><i class="fa fa-pen fa-1" aria-hidden="true"></i></button>
+                            <button class="btn btn-outline-secondary btn-sm remove-show" data-content="{{show[0]}}" data-source="{{shows[0]}}" type="button"><i class="fa fa-trash fa-1" aria-hidden="true"></i></button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+              {% endif %}
+              {% endif %}
+ 
+              {% endfor %}
+
+             </div>
+           </div>
+
+        </main>
+
+        {% else %}
+        <main role="main" class="container">
+           <div class="modal-content">
+             <div class="modal-body">
+                 You are unauthorized access to this page. Please <a href="{{ url_for('login') }}">login</a> to the correct user.
+             </div>
+           </div>
+        </main>
+
+        {% endif %}
+
+
+
+    </body>
+</html>
